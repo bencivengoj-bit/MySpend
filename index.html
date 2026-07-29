@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Budget Tracker</title>
+<style>
+  :root{
+    --bg:#ffe4f0;
+    --panel:#fff5fa;
+    --panel-2:#ffd6ea;
+    --border:#ffb3d9;
+    --text:#5c2340;
+    --sub:#a8628f;
+    --orange:#ff5cad;
+    --green:#2e9e6b;
+    --red:#d6336c;
+    --mono:'JetBrains Mono', ui-monospace, monospace;
+    --sans:'Inter', -apple-system, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    padding:20px 14px 60px;
+  }
+  .wrap{max-width:560px;margin:0 auto;}
+  h1{
+    font-size:1.3rem;
+    font-weight:700;
+    margin:0 0 4px;
+    letter-spacing:-0.02em;
+  }
+  .sub{color:var(--sub);font-size:0.85rem;margin-bottom:20px;}
+  .month-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:20px;
+  }
+  select{
+    background:var(--panel);
+    color:var(--text);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:8px 10px;
+    font-family:var(--mono);
+    font-size:0.9rem;
+    flex:1;
+  }
+  .btn-small{
+    background:var(--panel-2);
+    color:var(--text);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:8px 12px;
+    font-size:0.85rem;
+    cursor:pointer;
+  }
+  .card{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:16px;
+    margin-bottom:16px;
+  }
+  .card h2{
+    font-size:0.95rem;
+    margin:0 0 12px;
+    color:var(--sub);
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    font-weight:600;
+  }
+  .paycheck-input{
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .paycheck-input span{color:var(--sub);font-family:var(--mono);}
+  input[type="number"], input[type="text"]{
+    background:var(--panel-2);
+    color:var(--text);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:10px;
+    font-family:var(--mono);
+    font-size:1rem;
+    width:100%;
+  }
+  input:focus, select:focus{outline:1px solid var(--orange);}
+  .summary-row{
+    display:flex;
+    justify-content:space-between;
+    padding:6px 0;
+    font-size:0.9rem;
+  }
+  .summary-row .label{color:var(--sub);}
+  .summary-row .val{font-family:var(--mono);}
+  .summary-row.total{
+    border-top:1px solid var(--border);
+    margin-top:6px;
+    padding-top:10px;
+    font-weight:700;
+    font-size:1rem;
+  }
+  .positive{color:var(--green);}
+  .negative{color:var(--red);}
+  .cat-grid{
+    display:grid;
+    grid-template-columns:1fr 100px;
+    gap:8px 10px;
+    margin-bottom:14px;
+  }
+  .cat-grid label{
+    align-self:center;
+    font-size:0.88rem;
+    color:var(--text);
+  }
+  .small-item-row{
+    display:flex;
+    gap:8px;
+    margin-bottom:10px;
+  }
+  .small-item-row input[type="text"]{flex:1.4;}
+  .small-item-row input[type="number"]{flex:1;}
+  .btn{
+    background:var(--orange);
+    color:#ffffff;
+    border:none;
+    border-radius:8px;
+    padding:10px 14px;
+    font-weight:700;
+    font-size:0.9rem;
+    cursor:pointer;
+    width:100%;
+  }
+  .btn:active{opacity:0.85;}
+  .list{margin-top:14px;}
+  .list-item{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:8px 0;
+    border-bottom:1px solid var(--border);
+    font-size:0.88rem;
+  }
+  .list-item:last-child{border-bottom:none;}
+  .list-item .name{color:var(--text);}
+  .list-item .tag{
+    color:var(--sub);
+    font-size:0.75rem;
+    margin-left:6px;
+  }
+  .list-item .amt{font-family:var(--mono);color:var(--red);}
+  .list-item .del{
+    background:none;border:none;color:var(--sub);
+    font-size:1rem;cursor:pointer;padding:0 0 0 10px;
+  }
+  .cc-card{
+    background:var(--panel-2);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:14px;
+    margin-bottom:12px;
+  }
+  .cc-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    margin-bottom:10px;
+  }
+  .cc-header .name{font-weight:700;font-size:0.95rem;}
+  .cc-header .apr{color:var(--sub);font-family:var(--mono);font-size:0.8rem;}
+  .cc-balance{
+    font-family:var(--mono);
+    font-size:1.4rem;
+    font-weight:700;
+    margin-bottom:4px;
+  }
+  .cc-balance-edit{
+    display:flex;
+    align-items:center;
+    gap:4px;
+    margin-bottom:4px;
+  }
+  .cc-balance-edit span{
+    font-family:var(--mono);
+    font-size:1.4rem;
+    font-weight:700;
+    color:var(--text);
+  }
+  .cc-balance-input{
+    font-family:var(--mono);
+    font-size:1.4rem;
+    font-weight:700;
+    background:transparent;
+    border:none;
+    border-bottom:1px dashed var(--border);
+    border-radius:0;
+    padding:2px 0;
+    width:auto;
+    flex:1;
+    min-width:0;
+  }
+  .cc-balance-input:focus{outline:none;border-bottom-color:var(--orange);}
+  .cc-interest{
+    color:var(--sub);
+    font-size:0.78rem;
+    margin-bottom:10px;
+  }
+  .cc-actions{display:flex;gap:8px;}
+  .cc-actions input{flex:1;}
+  .cc-actions button{
+    background:var(--panel);
+    border:1px solid var(--border);
+    color:var(--text);
+    border-radius:8px;
+    padding:0 12px;
+    font-size:0.85rem;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .cc-apply-int{
+    margin-top:8px;
+    background:none;
+    border:1px dashed var(--border);
+    color:var(--sub);
+    border-radius:8px;
+    padding:6px 10px;
+    font-size:0.75rem;
+    cursor:pointer;
+    width:100%;
+  }
+  .empty{color:var(--sub);font-size:0.85rem;text-align:center;padding:10px 0;}
+  .loading{color:var(--sub);text-align:center;padding:40px 0;}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+  <div class="loading">Loading…</div>
+</div>
+
+<script>
+const STORAGE_KEY = 'budget-data-v1';
+const CATEGORIES = ['Rent','Phone Bill','Gas','Electric','WiFi','Groceries','Car Payment','Car Insurance'];
+const CARD_DEFS = [
+  {id:'capitalone', name:'Capital One', apr:29.7},
+  {id:'discover', name:'Discover', apr:27.2}
+];
+
+let data = null;
+
+function monthKey(d){
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+}
+function monthLabel(key){
+  const [y,m] = key.split('-');
+  const d = new Date(parseInt(y), parseInt(m)-1, 1);
+  return d.toLocaleDateString('en-US',{month:'long', year:'numeric'});
+}
+function fmt(n){
+  return (n<0?'-$':'$') + Math.abs(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+function emptyMonth(){
+  return { paycheck:0, categoryExpenses:{}, smallItems:[] };
+}
+function defaultData(){
+  const cc = {};
+  CARD_DEFS.forEach(c => cc[c.id] = { balance:0 });
+  return { months:{}, creditCards: cc };
+}
+
+async function loadData(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    data = raw ? JSON.parse(raw) : defaultData();
+  }catch(e){
+    data = defaultData();
+  }
+  if(!data.months) data.months = {};
+  if(!data.creditCards) data.creditCards = {};
+  CARD_DEFS.forEach(c => { if(!data.creditCards[c.id]) data.creditCards[c.id] = {balance:0}; });
+  if(!data.currentMonth) data.currentMonth = monthKey(new Date());
+  if(!data.months[data.currentMonth]) data.months[data.currentMonth] = emptyMonth();
+}
+
+async function saveData(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }catch(e){
+    console.error('save failed', e);
+  }
+}
+
+function getMonth(key){
+  if(!data.months[key]) data.months[key] = emptyMonth();
+  return data.months[key];
+}
+
+function allMonthKeys(){
+  const keys = Object.keys(data.months);
+  const cur = data.currentMonth;
+  if(!keys.includes(cur)) keys.push(cur);
+  return keys.sort().reverse();
+}
+
+function render(){
+  const app = document.getElementById('app');
+  const key = data.currentMonth;
+  const m = getMonth(key);
+
+  const totalCatExpenses = CATEGORIES.reduce((s,c) => s + (m.categoryExpenses[c] || 0), 0);
+  const totalSmallItems = m.smallItems.reduce((s,i) => s + i.amount, 0);
+  const totalExpenses = totalCatExpenses + totalSmallItems;
+  const remaining = (m.paycheck || 0) - totalExpenses;
+
+  const monthOptions = allMonthKeys().map(k =>
+    `<option value="${k}" ${k===key?'selected':''}>${monthLabel(k)}</option>`
+  ).join('');
+
+  const catInputs = CATEGORIES.map(c => `
+    <label>${c}</label>
+    <input type="number" inputmode="decimal" step="0.01" placeholder="0.00"
+      value="${m.categoryExpenses[c] ? m.categoryExpenses[c] : ''}"
+      data-cat="${c}" class="cat-input">
+  `).join('');
+
+  const smallItemsList = m.smallItems.length ? m.smallItems.map(item => `
+    <div class="list-item">
+      <span class="name">${escapeHtml(item.label)}</span>
+      <span style="display:flex;align-items:center;">
+        <span class="amt">${fmt(item.amount)}</span>
+        <button class="del" data-del-item="${item.id}">✕</button>
+      </span>
+    </div>
+  `).join('') : '<div class="empty">No small items added yet</div>';
+
+  const ccCards = CARD_DEFS.map(c => {
+    const bal = data.creditCards[c.id].balance || 0;
+    const monthlyRate = c.apr / 100 / 12;
+    const estInterest = bal * monthlyRate;
+    return `
+    <div class="cc-card">
+      <div class="cc-header">
+        <span class="name">${c.name}</span>
+        <span class="apr">${c.apr}% APR</span>
+      </div>
+      <div class="cc-balance-edit">
+        <span>$</span>
+        <input type="number" inputmode="decimal" step="0.01" class="cc-balance-input" data-balance="${c.id}" value="${bal ? bal : ''}" placeholder="0.00">
+      </div>
+      <div class="cc-interest">Est. monthly interest: ${fmt(estInterest)}</div>
+      <div class="cc-actions">
+        <input type="number" inputmode="decimal" step="0.01" placeholder="Payment amount" id="pay-${c.id}">
+        <button data-pay="${c.id}">Pay</button>
+        <button data-charge="${c.id}">Charge</button>
+      </div>
+      <button class="cc-apply-int" data-applyint="${c.id}">Apply this month's interest (${fmt(estInterest)})</button>
+    </div>
+    `;
+  }).join('');
+
+  app.innerHTML = `
+    <h1>Budget Tracker</h1>
+    <div class="sub">Track your paycheck, spending, and credit card balances</div>
+
+    <div class="month-row">
+      <select id="monthSelect">${monthOptions}</select>
+      <button class="btn-small" id="newMonthBtn">+ New Month</button>
+    </div>
+
+    <div class="card">
+      <h2>Paycheck</h2>
+      <div class="paycheck-input">
+        <span>$</span>
+        <input type="number" inputmode="decimal" step="0.01" id="paycheckInput" placeholder="0.00" value="${m.paycheck ? m.paycheck : ''}">
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Bills & Regular Expenses</h2>
+      <div class="cat-grid">${catInputs}</div>
+    </div>
+
+    <div class="card">
+      <h2>Small Purchases</h2>
+      <div class="small-item-row">
+        <input type="text" id="smallItemLabel" placeholder="e.g. Coffee, hardware store">
+        <input type="number" inputmode="decimal" step="0.01" id="smallItemAmount" placeholder="0.00">
+      </div>
+      <button class="btn" id="addSmallItemBtn">Add Item</button>
+      <div class="list">${smallItemsList}</div>
+    </div>
+
+    <div class="card">
+      <h2>${monthLabel(key)} Summary</h2>
+      <div class="summary-row"><span class="label">Paycheck</span><span class="val positive">${fmt(m.paycheck||0)}</span></div>
+      <div class="summary-row"><span class="label">Bills & Expenses</span><span class="val negative">-${fmt(totalCatExpenses)}</span></div>
+      <div class="summary-row"><span class="label">Small Purchases</span><span class="val negative">-${fmt(totalSmallItems)}</span></div>
+      <div class="summary-row total"><span class="label">Remaining</span><span class="val ${remaining>=0?'positive':'negative'}">${fmt(remaining)}</span></div>
+    </div>
+
+    <div class="card">
+      <h2>Credit Cards</h2>
+      ${ccCards}
+    </div>
+  `;
+
+  attachHandlers();
+}
+
+function escapeHtml(s){
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function attachHandlers(){
+  const key = data.currentMonth;
+  const m = getMonth(key);
+
+  document.getElementById('monthSelect').addEventListener('change', e => {
+    data.currentMonth = e.target.value;
+    saveData();
+    render();
+  });
+
+  document.getElementById('newMonthBtn').addEventListener('click', () => {
+    const now = new Date();
+    let k = monthKey(now);
+    if(data.months[k]){
+      // find next month not yet used, roll forward from current
+      const [y,mo] = data.currentMonth.split('-').map(Number);
+      const nd = new Date(y, mo, 1); // next month
+      k = monthKey(nd);
+    }
+    data.months[k] = emptyMonth();
+    data.currentMonth = k;
+    saveData();
+    render();
+  });
+
+  document.getElementById('paycheckInput').addEventListener('input', e => {
+    m.paycheck = parseFloat(e.target.value) || 0;
+    saveData();
+    updateSummaryOnly();
+  });
+
+  document.querySelectorAll('.cat-input').forEach(inp => {
+    inp.addEventListener('input', e => {
+      const cat = e.target.dataset.cat;
+      const v = parseFloat(e.target.value) || 0;
+      if(v === 0) delete m.categoryExpenses[cat];
+      else m.categoryExpenses[cat] = v;
+      saveData();
+      updateSummaryOnly();
+    });
+  });
+
+  document.getElementById('addSmallItemBtn').addEventListener('click', () => {
+    const labelEl = document.getElementById('smallItemLabel');
+    const amtEl = document.getElementById('smallItemAmount');
+    const label = labelEl.value.trim();
+    const amount = parseFloat(amtEl.value);
+    if(!label || !amount || amount <= 0) return;
+    m.smallItems.push({ id: Date.now().toString(), label, amount });
+    saveData();
+    render();
+  });
+
+  document.querySelectorAll('[data-del-item]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      const id = e.target.dataset.delItem;
+      m.smallItems = m.smallItems.filter(i => i.id !== id);
+      saveData();
+      render();
+    });
+  });
+
+  CARD_DEFS.forEach(c => {
+    const balInput = document.querySelector(`[data-balance="${c.id}"]`);
+    balInput.addEventListener('input', e => {
+      const v = parseFloat(e.target.value) || 0;
+      data.creditCards[c.id].balance = v;
+      saveData();
+      const card = e.target.closest('.cc-card');
+      const monthlyRate = c.apr / 100 / 12;
+      const estInterest = v * monthlyRate;
+      card.querySelector('.cc-interest').textContent = `Est. monthly interest: ${fmt(estInterest)}`;
+      card.querySelector('.cc-apply-int').textContent = `Apply this month's interest (${fmt(estInterest)})`;
+    });
+    const payBtn = document.querySelector(`[data-pay="${c.id}"]`);
+    const chargeBtn = document.querySelector(`[data-charge="${c.id}"]`);
+    const applyIntBtn = document.querySelector(`[data-applyint="${c.id}"]`);
+    payBtn.addEventListener('click', () => {
+      const input = document.getElementById(`pay-${c.id}`);
+      const amt = parseFloat(input.value);
+      if(!amt || amt <= 0) return;
+      data.creditCards[c.id].balance = Math.max(0, (data.creditCards[c.id].balance||0) - amt);
+      saveData();
+      render();
+    });
+    chargeBtn.addEventListener('click', () => {
+      const input = document.getElementById(`pay-${c.id}`);
+      const amt = parseFloat(input.value);
+      if(!amt || amt <= 0) return;
+      data.creditCards[c.id].balance = (data.creditCards[c.id].balance||0) + amt;
+      saveData();
+      render();
+    });
+    applyIntBtn.addEventListener('click', () => {
+      const bal = data.creditCards[c.id].balance || 0;
+      const monthlyRate = c.apr / 100 / 12;
+      data.creditCards[c.id].balance = bal + (bal * monthlyRate);
+      saveData();
+      render();
+    });
+  });
+}
+
+function updateSummaryOnly(){
+  const key = data.currentMonth;
+  const m = getMonth(key);
+  const totalCatExpenses = CATEGORIES.reduce((s,c) => s + (m.categoryExpenses[c] || 0), 0);
+  const totalSmallItems = m.smallItems.reduce((s,i) => s + i.amount, 0);
+  const totalExpenses = totalCatExpenses + totalSmallItems;
+  const remaining = (m.paycheck || 0) - totalExpenses;
+  const rows = document.querySelectorAll('.card:nth-of-type(4) .summary-row .val');
+  if(rows.length === 4){
+    rows[0].textContent = fmt(m.paycheck||0);
+    rows[1].textContent = '-' + fmt(totalCatExpenses);
+    rows[2].textContent = '-' + fmt(totalSmallItems);
+    rows[3].textContent = fmt(remaining);
+    rows[3].className = 'val ' + (remaining>=0?'positive':'negative');
+  }
+}
+
+(async function init(){
+  await loadData();
+  render();
+})();
+</script>
+</body>
+</html>
